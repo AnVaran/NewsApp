@@ -65,10 +65,10 @@ class FeedCell: UICollectionViewCell {
         return label
     }()
     
-    let feedText: TopAlignedLabel = {
-        var text = TopAlignedLabel()
+    let feedText: UILabel = {
+        var text = UILabel()
         text.translatesAutoresizingMaskIntoConstraints = false
-        text.numberOfLines = 0
+        text.numberOfLines = 3
         text.textAlignment = .center
         text.font = UIFont.systemFont(ofSize: 18)
         text.textColor = #colorLiteral(red: 0.6274509804, green: 0.6470588235, blue: 0.7098039216, alpha: 1)
@@ -79,6 +79,7 @@ class FeedCell: UICollectionViewCell {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         //button.setTitle("See more...", for: .normal)
+        button.setTitle("Show more", for: .normal)
         return button
     }()
 
@@ -97,7 +98,6 @@ class FeedCell: UICollectionViewCell {
                 button.isHidden = true
             } else {
                 button.isHidden = false
-                button.setTitle("Read", for: .normal)
             }
             
             

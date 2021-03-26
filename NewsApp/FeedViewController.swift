@@ -54,7 +54,7 @@ class FeedViewController: UICollectionViewController, UICollectionViewDelegateFl
         if expandedCells.contains(indexPath.row) {
           return CGSize(width: view.frame.width, height: (view.frame.width * viewFeedImageHightCoefficient) + dateAndHeidingLabelHight + height + 10)
         } else {
-          return  CGSize(width: view.frame.width, height: (view.frame.width * viewFeedImageHightCoefficient) + dateAndHeidingLabelHight + 70 + 10)
+          return  CGSize(width: view.frame.width, height: (view.frame.width * viewFeedImageHightCoefficient) + dateAndHeidingLabelHight + 80 + 10)
         }
         
         
@@ -73,9 +73,12 @@ class FeedViewController: UICollectionViewController, UICollectionViewDelegateFl
         if let item = feedItems?[indexPath.item] {
             cell.item = item
         }
-        let height = LabelHeightCalculate.heightForView(text: cell.feedText.text!, font: UIFont.systemFont(ofSize: 18), width: view.frame.width)
-        if height <= 70 {
-            cell.button.setTitle("", for: .normal)
+        if expandedCells.contains(indexPath.row) {
+            cell.button.setTitle("Less", for: .normal)
+            cell.feedText.numberOfLines = 0
+        } else {
+            cell.button.setTitle("Show more", for: .normal)
+            cell.feedText.numberOfLines = 3
         }
         cell.button.tag = indexPath.row
         cell.button.addTarget(self, action: #selector(deleteAction), for: UIControl.Event.touchUpInside)
