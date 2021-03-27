@@ -27,24 +27,30 @@ class FeedViewController: UICollectionViewController {
         button.setTitle("♺", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
         button.tintColor = .white
+        button.addTarget(self, action: #selector(updataAction), for: UIControl.Event.touchUpInside)
         return button
     }()
     
     lazy var searchBar: UISearchBar = {
         let search = UISearchBar(frame: CGRect(x: 0, y: 0, width: 300, height: 20))
         search.placeholder = "Search"
-        
+       
         return search
     }()
+    
+    @objc func updataAction(_ sender: UIButton) {
+        dayCounter = 1
+        feedItems.removeAll()
+        filtredFeedItems.removeAll()
+        
+        fetchData(fromCurrentDate: true)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         settingCollecctioView()
-        fetchData()
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: upDataButton)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchBar)
-        searchBar.delegate = self
+        fetchData(fromCurrentDate: true)
+        settingNavigationBarItems()
     }
     
     private func settingCollecctioView() {
@@ -57,17 +63,25 @@ class FeedViewController: UICollectionViewController {
         collectionView.register(FeedCell.self, forCellWithReuseIdentifier: cellID)
         navigationController?.navigationBar.isTranslucent = false
     }
-    // MARK: - Load Feed
     
-    private func fetchData() {
+    private func settingNavigationBarItems() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: upDataButton)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchBar)
+        searchBar.delegate = self
+    }
+    // MARK: - Load Feed
+    private func fetchData(fromCurrentDate: Bool) {
         if dayCounter <= 7 {
             guard let date = DateConverter.getDateFor(hours: 24 * dayCounter) else { return }
             let fromDate = DateConverter.dateToISO_8601String(date: date)
-            feedLoad.loadFeed(fromDate: fromDate) { [weak self] (items) in
-                self?.feedItems = items
-                self?.filtredFeedItems = items
+            feedLoad.loadFeed(fromDate: fromDate, fromCurrentDate: fromCurrentDate) { [weak self] (items) in
+                self?.feedItems.append(contentsOf: items)
+                self?.filtredFeedItems.append(contentsOf: items)
                 DispatchQueue.main.async {
                     self?.collectionView.reloadSections(IndexSet(integer: 0))
+                    if fromCurrentDate {
+                        self?.collectionView.setContentOffset(CGPoint.zero, animated: true)
+                    }
                 }
             }
             dayCounter += 1
@@ -79,7 +93,7 @@ class FeedViewController: UICollectionViewController {
     // MARK: - UICollectionViewDataSource
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.row == feedItems.count - 1 {
-            fetchData()
+            fetchData(fromCurrentDate: false)
         }
     }
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -153,6 +167,15 @@ extension FeedViewController: UISearchBarDelegate {
             }
         }
         collectionView.reloadData()
+    }
+    
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+            self.searchBar.showsCancelButton = true
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+            searchBar.showsCancelButton = false
+            searchBar.resignFirstResponder()
     }
 }
 

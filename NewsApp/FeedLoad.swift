@@ -15,15 +15,19 @@ class FeedLoad: NSObject, XMLParserDelegate {
     private let API_KEY = "&apiKey=cfc401cb92d841c8a807889295dc5648"
     private let MAIN_URL = "https://newsapi.org/v2/everything?q=apple"
     private let LANGUAGE = "&language=en"
-    private var toDate: String = {
+    let currentDate: String = {
         guard let currDate = DateConverter.getDateFor(hours: 0) else { return ""}
         let date = DateConverter.dateToISO_8601String(date: currDate)
         return date
     }()
+    var toDate = ""
     
-    private var rssItems: [FeedItem] = []
+    private var feedItems: [FeedItem] = []
     
-    func loadFeed(fromDate: String, comletionHandler: @escaping (([FeedItem]) -> Void)) {
+    func loadFeed(fromDate: String, fromCurrentDate: Bool, comletionHandler: @escaping (([FeedItem]) -> Void)) {
+        if fromCurrentDate {
+            toDate = currentDate
+        }
         
         let inputUrl = MAIN_URL + LANGUAGE + "&from=" + fromDate + "&to=" + toDate + API_KEY
         
@@ -34,7 +38,6 @@ class FeedLoad: NSObject, XMLParserDelegate {
         let request = URLRequest(url: url)
         let urlSession = URLSession.shared
         let task = urlSession.dataTask(with: request) { (data, response, error) in
-            print(response)
             guard let data = data else {
                 if let error = error {
                     print(error.localizedDescription)
@@ -52,13 +55,13 @@ class FeedLoad: NSObject, XMLParserDelegate {
                     let title = i.title ?? ""
                     let description = i.description ?? "No description"
                     let item = FeedItem(imageURL: imageUrl, title: title, auther: author, pubDate: date, description: description)
-                    self.rssItems.append(item)
+                    self.feedItems.append(item)
                 }
             } catch {
                 print("Error in JSON parsing")
             }
-            self.parserCompletionHandler(self.rssItems)
-            
+            self.parserCompletionHandler(self.feedItems)
+            self.feedItems.removeAll()
         }
         task.resume()
     }
