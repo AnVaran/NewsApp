@@ -11,20 +11,30 @@ import UIKit
 class FeedLoad: NSObject, XMLParserDelegate {
     
     private var parserCompletionHandler: (([FeedItem]) -> Void)!
-    private let API_KEY = "cfc401cb92d841c8a807889295dc5648"
+    
+    private let API_KEY = "&apiKey=cfc401cb92d841c8a807889295dc5648"
+    private let MAIN_URL = "https://newsapi.org/v2/everything?q=apple"
+    private let LANGUAGE = "&language=en"
+    private var toDate: String = {
+        guard let currDate = DateConverter.getDateFor(hours: 0) else { return ""}
+        let date = DateConverter.dateToISO_8601String(date: currDate)
+        return date
+    }()
+    
     private var rssItems: [FeedItem] = []
     
-    func loadFeed(url: String, comletionHandler: @escaping (([FeedItem]) -> Void)) {
+    func loadFeed(fromDate: String, comletionHandler: @escaping (([FeedItem]) -> Void)) {
         
-        let u = "https://newsapi.org/v2/top-headlines?country=us&apiKey="
-        let urll = u + API_KEY
+        let inputUrl = MAIN_URL + LANGUAGE + "&from=" + fromDate + "&to=" + toDate + API_KEY
         
+        toDate = fromDate
         self.parserCompletionHandler = comletionHandler
         
-        guard let url = URL(string: urll) else { return }
+        guard let url = URL(string: inputUrl) else { return }
         let request = URLRequest(url: url)
         let urlSession = URLSession.shared
         let task = urlSession.dataTask(with: request) { (data, response, error) in
+            print(response)
             guard let data = data else {
                 if let error = error {
                     print(error.localizedDescription)
@@ -38,7 +48,7 @@ class FeedLoad: NSObject, XMLParserDelegate {
                 for i in feedArray {
                     let imageUrl = i.urlToImage ?? ""
                     let author = i.author ?? "No author"
-                    let date = i.publishedAt ?? ""
+                    let date = DateConverter.stringToISO_8601String(i.publishedAt) ?? "No date"
                     let title = i.title ?? ""
                     let description = i.description ?? "No description"
                     let item = FeedItem(imageURL: imageUrl, title: title, auther: author, pubDate: date, description: description)

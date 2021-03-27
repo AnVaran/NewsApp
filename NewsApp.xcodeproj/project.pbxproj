@@ -18,6 +18,7 @@
 		180AAE83260DE62900E6029E /* LoadImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180AAE82260DE62900E6029E /* LoadImage.swift */; };
 		180AAE85260DE6A100E6029E /* TopAlignTextInLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180AAE84260DE6A100E6029E /* TopAlignTextInLabel.swift */; };
 		180AAE87260DE7C000E6029E /* LabelHeightCalculate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180AAE86260DE7C000E6029E /* LabelHeightCalculate.swift */; };
+		180AAE89260F4BFE00E6029E /* DateConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180AAE88260F4BFE00E6029E /* DateConverter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		180AAE82260DE62900E6029E /* LoadImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadImage.swift; sourceTree = "<group>"; };
 		180AAE84260DE6A100E6029E /* TopAlignTextInLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopAlignTextInLabel.swift; sourceTree = "<group>"; };
 		180AAE86260DE7C000E6029E /* LabelHeightCalculate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelHeightCalculate.swift; sourceTree = "<group>"; };
+		180AAE88260F4BFE00E6029E /* DateConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConverter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +76,7 @@
 				180AAE82260DE62900E6029E /* LoadImage.swift */,
 				180AAE86260DE7C000E6029E /* LabelHeightCalculate.swift */,
 				180AAE80260DE56300E6029E /* FeedLoad.swift */,
+				180AAE88260F4BFE00E6029E /* DateConverter.swift */,
 				180AAE70260DCEB300E6029E /* Main.storyboard */,
 				180AAE73260DCEB700E6029E /* Assets.xcassets */,
 				180AAE75260DCEB700E6029E /* LaunchScreen.storyboard */,
@@ -155,6 +158,7 @@
 			files = (
 				180AAE6F260DCEB300E6029E /* FeedViewController.swift in Sources */,
 				180AAE7F260DE29700E6029E /* FeedCell.swift in Sources */,
+				180AAE89260F4BFE00E6029E /* DateConverter.swift in Sources */,
 				180AAE81260DE56300E6029E /* FeedLoad.swift in Sources */,
 				180AAE83260DE62900E6029E /* LoadImage.swift in Sources */,
 				180AAE87260DE7C000E6029E /* LabelHeightCalculate.swift in Sources */,
@@ -305,7 +309,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 59F4BVAUWF;
 				INFOPLIST_FILE = NewsApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -322,7 +328,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 59F4BVAUWF;
 				INFOPLIST_FILE = NewsApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

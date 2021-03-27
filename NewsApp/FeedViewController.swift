@@ -8,20 +8,43 @@
 
 import UIKit
 
-class FeedViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class FeedViewController: UICollectionViewController {
 
     var expandedCells = [Int]()
+    var dayCounter = 1
     
-    private var feedItems: [FeedItem]?
+    let feedLoad = FeedLoad()
+    
+    private var feedItems = [FeedItem]()
+    private var filtredFeedItems = [FeedItem]()
     private let cellID = "Cell"
     private let topCellCoefficient: CGFloat = 7
     private let viewFeedImageHightCoefficient: CGFloat = 1.1
     private let dateAndHeidingLabelHight: CGFloat = 205
     
+    lazy var upDataButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("♺", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+        button.tintColor = .white
+        return button
+    }()
+    
+    lazy var searchBar: UISearchBar = {
+        let search = UISearchBar(frame: CGRect(x: 0, y: 0, width: 300, height: 20))
+        search.placeholder = "Search"
+        
+        return search
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         settingCollecctioView()
         fetchData()
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: upDataButton)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: searchBar)
+        searchBar.delegate = self
     }
     
     private func settingCollecctioView() {
@@ -29,50 +52,44 @@ class FeedViewController: UICollectionViewController, UICollectionViewDelegateFl
         layout.scrollDirection = .vertical
         collectionView.collectionViewLayout = layout
         
-        //collectionView.contentInsetAdjustmentBehavior = .always
+        collectionView.contentInsetAdjustmentBehavior = .always
         collectionView.backgroundColor = #colorLiteral(red: 0.1803921569, green: 0.1843137255, blue: 0.2549019608, alpha: 1)
         collectionView.register(FeedCell.self, forCellWithReuseIdentifier: cellID)
         navigationController?.navigationBar.isTranslucent = false
-        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     }
     // MARK: - Load Feed
     
     private func fetchData() {
-        let feedLoad = FeedLoad()
-        feedLoad.loadFeed(url: "https://news.tut.by/rss/all.rss") { [weak self] (rssItems) in
-            self?.feedItems = rssItems
-            DispatchQueue.main.async {
-                self?.collectionView.reloadSections(IndexSet(integer: 0))
+        if dayCounter <= 7 {
+            guard let date = DateConverter.getDateFor(hours: 24 * dayCounter) else { return }
+            let fromDate = DateConverter.dateToISO_8601String(date: date)
+            feedLoad.loadFeed(fromDate: fromDate) { [weak self] (items) in
+                self?.feedItems = items
+                self?.filtredFeedItems = items
+                DispatchQueue.main.async {
+                    self?.collectionView.reloadSections(IndexSet(integer: 0))
+                }
             }
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        guard let text = feedItems?[indexPath.item].description else { return CGSize(width: view.frame.width, height: (view.frame.width * viewFeedImageHightCoefficient) + dateAndHeidingLabelHight + 10)}
-        let height = LabelHeightCalculate.heightForView(text: text, font: UIFont.systemFont(ofSize: 18), width: view.frame.width)
-        
-        if expandedCells.contains(indexPath.row) {
-          return CGSize(width: view.frame.width, height: (view.frame.width * viewFeedImageHightCoefficient) + dateAndHeidingLabelHight + height + 10)
+            dayCounter += 1
         } else {
-          return  CGSize(width: view.frame.width, height: (view.frame.width * viewFeedImageHightCoefficient) + dateAndHeidingLabelHight + 80 + 10)
+            print("DateCounter > 7 ....")
         }
-        
-        
     }
 
     // MARK: - UICollectionViewDataSource
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let rssItems = feedItems else {
-            return 0
+    override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if indexPath.row == feedItems.count - 1 {
+            fetchData()
         }
-        return rssItems.count
+    }
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return filtredFeedItems.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! FeedCell
-        if let item = feedItems?[indexPath.item] {
-            cell.item = item
-        }
+        cell.item = filtredFeedItems[indexPath.item]
+        
         if expandedCells.contains(indexPath.row) {
             cell.button.setTitle("Less", for: .normal)
             cell.feedText.numberOfLines = 0
@@ -80,9 +97,9 @@ class FeedViewController: UICollectionViewController, UICollectionViewDelegateFl
             cell.button.setTitle("Show more", for: .normal)
             cell.feedText.numberOfLines = 3
         }
+        
         cell.button.tag = indexPath.row
         cell.button.addTarget(self, action: #selector(deleteAction), for: UIControl.Event.touchUpInside)
-        
         
         return cell
     }
@@ -90,21 +107,52 @@ class FeedViewController: UICollectionViewController, UICollectionViewDelegateFl
     @objc func deleteAction(_ sender: UIButton){
       if let button = sender as? UIButton {
         // If the array contains the button that was pressed, then remove that button from the array
+        let index = IndexPath(item: sender.tag, section: 0)
+        
         if expandedCells.contains(sender.tag) {
           expandedCells = expandedCells.filter { $0 != sender.tag }
-            //sender.titleLabel?.text = "See more..."
+            
+            collectionView.reloadItems(at: [index])
         }
           // Otherwise, add the button to the array
         else {
           expandedCells.removeAll()
           expandedCells.append(sender.tag)
+            collectionView.reloadItems(at: [index])
         }
-        // Reload the tableView data anytime a button is pressed
-        DispatchQueue.main.async {
-            self.collectionView.reloadSections(IndexSet(integer: 0))
-        }
-
       }
+    }
+}
+
+
+extension FeedViewController: UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let text = filtredFeedItems[indexPath.item].description
+        let height = LabelHeightCalculate.heightForView(text: text, font: UIFont.systemFont(ofSize: 18), width: view.frame.width)
+        
+        if expandedCells.contains(indexPath.row) {
+          return CGSize(width: view.frame.width, height: (view.frame.width * viewFeedImageHightCoefficient) + dateAndHeidingLabelHight + height + 20)
+        } else {
+          return  CGSize(width: view.frame.width, height: (view.frame.width * viewFeedImageHightCoefficient) + dateAndHeidingLabelHight + 80 + 20)
+        }
+    }
+}
+
+extension FeedViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        filtredFeedItems = []
+        
+        if searchText == "" {
+            filtredFeedItems = feedItems
+        } else {
+            for item in feedItems {
+                if item.title.lowercased().contains(searchText.lowercased()) {
+                    filtredFeedItems.append(item)
+                }
+            }
+        }
+        collectionView.reloadData()
     }
 }
 
